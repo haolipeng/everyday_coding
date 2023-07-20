@@ -6,6 +6,11 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-g -O0")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0")
 
+set(CMAKE_C_FLAGS "-g -O0")
+set(CMAKE_C_FLAGS_DEBUG "-O0")
+
+
+
 #set output path
 #print PROJECT_BINARY_DIR value
 message(STATUS "PROJECT_BINARY_DIR=" ${PROJECT_BINARY_DIR})
@@ -18,3 +23,5 @@ add_subdirectory(__thread)
 add_subdirectory(dup_dup2)
 add_subdirectory(unix_client_server)
 add_subdirectory(macro)
+add_subdirectory(obtain_container_ip)
+add_subdirectory(named_pipe)
