@@ -1,0 +1,5 @@
+#ifndef LINUX_PROGRAMMING_TIMER_H
+#define LINUX_PROGRAMMING_TIMER_H
+
+#endif //LINUX_PROGRAMMING_TIMER_H
+typedef void (*TAOS_TMR_CALLBACK) (void* , void *);
