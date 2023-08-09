@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <pthread.h>
+
 #include "timer.h"
 
 typedef union _tmr_ctrl_t{
@@ -30,4 +32,50 @@ typedef struct tmr_obj_t{
 
     TAOS_TMR_CALLBACK fp;
     void*   param;
+}tmr_obj_t;
+
+typedef struct timer_list_t{
+    int64_t     lockedBy;
+    tmr_obj_t*  timers;
+}timer_list_t;
+
+typedef struct timer_map_t{
+    uint32_t        size;
+    uint32_t        count;
+    timer_list_t*   slots;
+}timer_map_t;
+
+typedef struct time_wheel_t{
+    pthread_mutex_t mutex;
+    int64_t         nextScanAt;
+    uint32_t        resolution;
+    uint16_t        size;
+    uint16_t        index;
+    tmr_obj_t**     slots;
+}time_wheel_t;
+
+//TODO:not finished
+
+int taosTmrThreads = 1;
+
+static uintptr_t nextTimerId = 0;
+
+static time_wheel_t wheels[] = {
+        {.resolution = MSECONDS_PER_TICK, .size = 4096},
+        {.resolution = 1000, .size = 1024},
+        {.resolution = 60000, .size = 1024},
 };
+static timer_map_t  timerMap;
+
+
+
+
+
+
+
+
+
+
+
+
+
