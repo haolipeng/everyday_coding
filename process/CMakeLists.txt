@@ -1,1 +1,2 @@
 add_executable(child_inherit_flock child_inherit_flock.c)
+add_executable(child_share_flock child_share_flock.c)
