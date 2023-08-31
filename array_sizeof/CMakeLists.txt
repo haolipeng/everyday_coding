@@ -1,0 +1,1 @@
+add_executable(array_sizeof_error array_sizeof.c)
