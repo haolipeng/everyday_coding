@@ -82,7 +82,21 @@ static void timerAddRef(tmr_obj_t* timer){
     atomic_add_fetch_8(&timer->refCount, 1);
 }
 
+static void timerDecRef(tmr_obj_t* timer){
+    if(atomic_sub_fetch_8(&timer->refCount,1) == 0){
+        free(timer);
+    }
+}
 
+static void lockTimerList(timer_list_t* list){
+    int64_t tid = taosGetPthreadId();
+    int i = 0;
+    while(atomic_val_compare_exchange_64(&(list->lockedBy), 0, tid) != 0){
+        if(++i % 1000 == 0){
+            sched_yield();
+        }
+    }
+}
 
 
 

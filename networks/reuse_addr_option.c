@@ -24,5 +24,4 @@ static void test_udp_any_addr_same_port_diff_ifs(void){
     if(setsockopt(udp_f1, SOL_SOCKET, SO_BINDTODEVICE, opt, strlen(opt))){
         printf("UDP1 fail to bind eth0. %s:%d\n", strerror(errno), errno);
     }
-
 }
