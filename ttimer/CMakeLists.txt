@@ -1,1 +1,1 @@
-add_executable(timer timer.h timer.c)
+add_executable(timer timer.h timer.c os.h)

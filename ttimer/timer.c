@@ -1,9 +1,16 @@
 #include <stdint.h>
 #include <pthread.h>
 #include <stdatomic.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <stdbool.h>
 
 #include "timer.h"
+#include "os.h"
+
 #define atomic_add_fetch_ptr(ptr, val) __atomic_add_fetch((ptr), (val), __ATOMIC_SEQ_CST)
+
+#define tListLen(x) (sizeof(x) / sizeof((x)[0]))
 
 typedef union _tmr_ctrl_t{
     char label[16];
@@ -96,6 +103,67 @@ static void lockTimerList(timer_list_t* list){
             sched_yield();
         }
     }
+}
+
+static void unlockTimerList(timer_list_t* list){
+    int64_t tid = pthread_self();
+    if(atomic_val_compare_exchange_64(&(list->lockedBy), tid, 0) != tid){
+        assert(false);
+    }
+}
+
+//增加定时器
+static void addTimer(tmr_obj_t* timer){
+    timerAddRef(timer);
+    timer->wheel = tListLen(wheels);
+
+    uint32_t  idx = (uint32_t)(timer->id % timerMap.size);
+    timer_list_t * list = timerMap.slots + idx;
+
+    lockTimerList(list);
+    timer->mnext = list->timers;
+    list->timers = timer;
+    unlockTimerList(list);
+}
+
+//查找定时器
+static  tmr_obj_t* findTimer(uintptr_t id){
+    tmr_obj_t* timer = NULL;
+    if(id > 0){
+        uint32_t idx = (uint32_t)(id % timerMap.size);
+        timer_list_t * list = timerMap.slots + idx;
+        lockTimerList(list);
+        for(timer = list->timers; timer != NULL; timer = timer->mnext){
+            if(timer->id == id){
+                timerAddRef(timer);
+                break;
+            }
+        }
+        unlockTimerList(list);
+    }
+    return timer;
+}
+
+//删除定时器
+static void removeTimer(uintptr_t id){
+    tmr_obj_t* prev = NULL;
+    uint32_t idx = (uint32_t)(id % timerMap.size);
+    timer_list_t * list = timerMap.slots + idx;
+    lockTimerList(list);
+    for(tmr_obj_t* p = list->timers; p != NULL; p = p->mnext)
+    {
+        if(p->id == id){
+            if(prev == NULL){
+                list->timers = p->mnext;
+            }else{
+                prev->mnext = p->mnext;
+            }
+            timerDecRef(p);
+            break;
+        }
+        prev = p;//记录上次的元素
+    }
+    unlockTimerList(list);
 }
 
 
