@@ -96,7 +96,7 @@ static void timerDecRef(tmr_obj_t* timer){
 }
 
 static void lockTimerList(timer_list_t* list){
-    int64_t tid = taosGetPthreadId();
+    int64_t tid = pthread_self();
     int i = 0;
     while(atomic_val_compare_exchange_64(&(list->lockedBy), 0, tid) != 0){
         if(++i % 1000 == 0){
@@ -164,6 +164,10 @@ static void removeTimer(uintptr_t id){
         prev = p;//记录上次的元素
     }
     unlockTimerList(list);
+}
+
+int main(){
+    return 0;
 }
 
 
