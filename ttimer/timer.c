@@ -1,14 +1,12 @@
 #include <stdint.h>
 #include <pthread.h>
-#include <stdatomic.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <sys/time.h>
 
 #include "timer.h"
 #include "os.h"
-
-#define atomic_add_fetch_ptr(ptr, val) __atomic_add_fetch((ptr), (val), __ATOMIC_SEQ_CST)
 
 #define tListLen(x) (sizeof(x) / sizeof((x)[0]))
 
@@ -164,6 +162,48 @@ static void removeTimer(uintptr_t id){
         prev = p;//记录上次的元素
     }
     unlockTimerList(list);
+}
+
+int64_t taosGetTimestampMs() {
+    struct timeval systemTime;
+    gettimeofday(&systemTime, NULL);
+    return (int64_t)systemTime.tv_sec * 1000L + (uint64_t)systemTime.tv_usec / 1000;
+}
+
+static void addToWheel(tmr_obj_t* timer, uint32_t delay){
+    timerAddRef(timer);
+    //select a wheel for the timer,we are not an accurate timer,
+    //but the inaccurate should not be too large.
+    timer->wheel = tListLen(wheels) - 1;
+    for(uint8_t i = 0; i < tListLen(wheels); i++){
+        time_wheel_t* wheel = wheels + i;
+        if(delay < wheel->resolution * wheel->size){
+            timer->wheel = i;
+            break;
+        }
+    }
+
+    time_wheel_t * wheel = wheels + timer->wheel;
+    timer->prev = NULL;
+    timer->expireAt = taosGetTimestampMs() + delay;
+
+    pthread_mutex_lock(&wheel->mutex);
+
+    uint32_t  idx = 0;
+    if(timer->expireAt > wheel->nextScanAt){
+        delay = (uint32_t)(timer->expireAt - wheel->nextScanAt);
+        idx = (delay + wheel->resolution - 1) / wheel->resolution;
+    }
+
+    timer->slot = (uint16_t)((wheel->index + idx + 1) % wheel->size);
+    tmr_obj_t* p = wheel->slots[timer->slot];
+    wheel->slots[timer->slot] = timer;
+    timer->next = p;
+    if (p != NULL) {
+        p->prev = timer;
+    }
+
+    pthread_mutex_unlock(&wheel->mutex);
 }
 
 int main(){
