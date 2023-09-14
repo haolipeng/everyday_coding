@@ -206,10 +206,6 @@ static void addToWheel(tmr_obj_t* timer, uint32_t delay){
     pthread_mutex_unlock(&wheel->mutex);
 }
 
-int main(){
-    return 0;
-}
-
 
 
 
