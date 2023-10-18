@@ -1,0 +1,2 @@
+add_executable(tdengine_timer timer.c)
+target_link_libraries(tdengine_timer pthread)

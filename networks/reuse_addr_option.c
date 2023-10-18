@@ -24,5 +24,24 @@ static void test_udp_any_addr_same_port_diff_ifs(void){
         printf("UDP1 fail to bind eth0. %s:%d\n", strerror(errno), errno);
     }
 
+    opt = "eth1";
+    if(setsockopt(udp_f2,SOL_SOCKET, SO_BINDTODEVICE, opt, strlen(opt))){
+        printf("UDP2 fail to bind eth1. %s:%d\n", strerror(errno), errno);
+    }
 
+    if(bind(udp_f1, &addr_in, sizeof(addr_in)) != 0){
+        printf("UDP1 fail to bind any addr and port(%d) on eth0\n", LOCAL_PORT);
+    }
+
+    if(bind(udp_f2, &addr_in, sizeof(addr_in)) != 0){
+        printf("UDP2 fail to bind any addr and port(%d) on eth1\n", LOCAL_PORT);
+    }
+
+    close(udp_f1);
+    close(udp_f2);
+}
+
+int main(int argc, const char** agrv){
+    test_udp_any_addr_same_port_diff_ifs();
+    return 0;
 }
