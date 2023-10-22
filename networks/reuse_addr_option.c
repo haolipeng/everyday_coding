@@ -10,37 +10,6 @@
 
 #define LOCAL_PORT (12345)
 
-static void test_udp_local_addr_same_port(struct in_addr* addr){
-    int udp_fd1 = socket(AF_INET, SOCK_DGRAM, 0);
-    int udp_fd2 = socket(AF_INET, SOCK_DGRAM, 0);
-
-    struct sockaddr_in addr_in;
-    memset(&addr_in, 0, sizeof(addr_in));
-    addr_in.sin_family = AF_INET;
-    addr_in.sin_port = htons(LOCAL_PORT);
-    addr_in.sin_addr = *addr;
-
-    int enable = 1;
-    //set reuse addr
-    setsockopt(udp_fd1, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int ));
-    setsockopt(udp_fd2, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int ));
-
-    //bind udp socket
-    int res = -1;
-    res = bind(udp_fd1, (const struct sockaddr*)&addr_in, sizeof(addr_in));
-    if(res != 0){
-        printf("UDP1 fail to bind port(%d)\n", LOCAL_PORT);
-    }
-
-    res = bind(udp_fd2, (const struct sockaddr*)&addr_in, sizeof(addr_in));
-    if(res != 0){
-        printf("UDP2 fail to bind port(%d)\n", LOCAL_PORT);
-    }
-
-    close(udp_fd1);
-    close(udp_fd2);
-}
-
 //测试：udp使用任意地址、相同端口，但是不同的interface网口，能否成功?
 static void test_udp_any_addr_same_port_diff_ifs(void){
     int udp_f1 = socket(AF_INET, SOCK_DGRAM, 0);
@@ -73,6 +42,104 @@ static void test_udp_any_addr_same_port_diff_ifs(void){
     close(udp_f2);
 }
 
+static void test_udp_diff_addr_same_port(struct in_addr* addr){
+    int udp_f1 = socket(AF_INET, SOCK_DGRAM, 0);
+    int udp_f2 = socket(AF_INET, SOCK_DGRAM, 0);
+
+    struct sockaddr_in addr_in;
+    memset(&addr_in, 0, sizeof(addr_in));
+    addr_in.sin_family = AF_INET;
+    addr_in.sin_port = htons(LOCAL_PORT);
+    addr_in.sin_addr = *addr;
+
+    //bind udp_f1
+    if(bind(udp_f1, (const struct sockaddr *)&addr_in, sizeof(addr_in)) != 0){
+        printf("UDP1 fail to bind any addr and port(%d)\n", LOCAL_PORT);
+    }
+
+    //bind udp_f2
+    addr_in.sin_addr.s_addr = 0x0100007f;
+    if(bind(udp_f2, (const struct sockaddr *)&addr_in, sizeof(addr_in)) != 0){
+        printf("UDP2 fail to bind any addr and port(%d)\n", LOCAL_PORT);
+    }
+
+    close(udp_f1);
+    close(udp_f2);
+
+    printf("UDP could bind two different addr with same port without SO_REUSEADDR\n");
+}
+
+static void test_udp_any_addr_same_port(struct in_addr* addr){
+    int udp_fd1 = socket(AF_INET, SOCK_DGRAM, 0);
+    int udp_fd2 = socket(AF_INET, SOCK_DGRAM, 0);
+
+    struct sockaddr_in addr_in;
+    memset(&addr_in, 0, sizeof(addr_in));
+    addr_in.sin_family = AF_INET;
+    addr_in.sin_port = htons(LOCAL_PORT);
+    addr_in.sin_addr = *addr;
+
+    int enable = 1;
+
+    //设置端口复用属性
+    setsockopt(udp_fd1, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int ));
+    setsockopt(udp_fd2, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int ));
+
+    //bind udp socket
+    int res = -1;
+    res = bind(udp_fd1, (const struct sockaddr*)&addr_in, sizeof(addr_in));
+    if(res != 0){
+        printf("UDP1 fail to bind port(%d)\n", LOCAL_PORT);
+    }
+
+    res = bind(udp_fd2, (const struct sockaddr*)&addr_in, sizeof(addr_in));
+    if(res != 0){
+        printf("UDP2 fail to bind port(%d)\n", LOCAL_PORT);
+    }
+
+    close(udp_fd1);
+    close(udp_fd2);
+
+    printf("UDP could bind two local addrs and port with SO_REUSEADDR");
+}
+
+//测试udp绑定本地地址相同端口，并采用SO_REUSEADDR
+static void test_udp_local_addr_same_port(struct in_addr* addr){
+    int udp_fd1 = socket(AF_INET, SOCK_DGRAM, 0);
+    int udp_fd2 = socket(AF_INET, SOCK_DGRAM, 0);
+
+    struct sockaddr_in addr_in;
+    memset(&addr_in, 0, sizeof(addr_in));
+    addr_in.sin_family = AF_INET;
+    addr_in.sin_port = htons(LOCAL_PORT);
+    addr_in.sin_addr = *addr;
+
+    int enable = 1;
+
+    //设置端口复用属性
+    setsockopt(udp_fd1, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int ));
+    setsockopt(udp_fd2, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int ));
+
+    //bind udp socket
+    int res = -1;
+    res = bind(udp_fd1, (const struct sockaddr*)&addr_in, sizeof(addr_in));
+    if(res != 0){
+        printf("UDP1 fail to bind port(%d)\n", LOCAL_PORT);
+    }
+
+    res = bind(udp_fd2, (const struct sockaddr*)&addr_in, sizeof(addr_in));
+    if(res != 0){
+        printf("UDP2 fail to bind port(%d)\n", LOCAL_PORT);
+    }
+
+    close(udp_fd1);
+    close(udp_fd2);
+
+    printf("UDP could bind two local addrs and port with SO_REUSEADDR");
+}
+
+//测试tcp和udp能否使用同一个端口
+//测试结果：可以
 static void test_tcp_udp_same_ports(struct in_addr* addr){
     //create tcp socket
     int tcp_fd = socket(AF_INET, SOCK_STREAM, 0);
