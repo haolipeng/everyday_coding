@@ -42,6 +42,7 @@ static void test_udp_any_addr_same_port_diff_ifs(void){
     close(udp_f2);
 }
 
+//测试udp采用不同网络地址，但是相同端口号
 static void test_udp_diff_addr_same_port(struct in_addr* addr){
     int udp_f1 = socket(AF_INET, SOCK_DGRAM, 0);
     int udp_f2 = socket(AF_INET, SOCK_DGRAM, 0);
@@ -77,7 +78,7 @@ static void test_udp_any_addr_same_port(struct in_addr* addr){
     memset(&addr_in, 0, sizeof(addr_in));
     addr_in.sin_family = AF_INET;
     addr_in.sin_port = htons(LOCAL_PORT);
-    addr_in.sin_addr = *addr;
+    addr_in.sin_addr.s_addr = INADDR_ANY;
 
     int enable = 1;
 
@@ -103,6 +104,37 @@ static void test_udp_any_addr_same_port(struct in_addr* addr){
     printf("UDP could bind two local addrs and port with SO_REUSEADDR");
 }
 
+static void test_udp_local_and_any_addr_same_port(struct in_addr* addr){
+    int udp_fd1 = socket(AF_INET, SOCK_DGRAM, 0);
+    int udp_fd2 = socket(AF_INET, SOCK_DGRAM, 0);
+
+    struct sockaddr_in addr_in;
+    memset(&addr_in, 0, sizeof(addr_in));
+    addr_in.sin_family = AF_INET;
+    addr_in.sin_port = htons(LOCAL_PORT);
+    addr_in.sin_addr = *addr;
+
+    int enable = 1;
+    setsockopt(udp_fd1, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int));
+    setsockopt(udp_fd2, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int));
+
+    int res = -1;
+    res = bind(udp_fd1, (const struct sockaddr*) &addr_in, sizeof(addr_in));
+    if(res != 0){
+        printf("UDP1 fail to bind local addr and  port(%d)\n", LOCAL_PORT);
+    }
+    res = bind(udp_fd2, (const struct sockaddr*) &addr_in, sizeof(addr_in));
+    if(res != 0){
+        printf("UDP2 fail to bind local addr and  port(%d)\n", LOCAL_PORT);
+    }
+
+    //关闭句柄
+    close(udp_fd1);
+    close(udp_fd2);
+
+    printf("UDP could bind one local addr and one any addr with same port with SO_REUSEADDR\n");
+}
+
 //测试udp绑定本地地址相同端口，并采用SO_REUSEADDR
 static void test_udp_local_addr_same_port(struct in_addr* addr){
     int udp_fd1 = socket(AF_INET, SOCK_DGRAM, 0);
@@ -115,7 +147,6 @@ static void test_udp_local_addr_same_port(struct in_addr* addr){
     addr_in.sin_addr = *addr;
 
     int enable = 1;
-
     //设置端口复用属性
     setsockopt(udp_fd1, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int ));
     setsockopt(udp_fd2, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int ));
