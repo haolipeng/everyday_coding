@@ -1,0 +1,5 @@
+add_executable(seccomp_mode_strict seccomp_strict_mode.c)
+target_link_libraries(seccomp_mode_strict seccomp)
+
+add_executable(seccomp_mode_bpf seccomp_bpf_mode.c)
+target_link_libraries(seccomp_mode_bpf seccomp)
