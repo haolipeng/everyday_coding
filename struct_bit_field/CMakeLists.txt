@@ -1,0 +1,2 @@
+add_executable(struct_bit_field struct_bit_field.c)
+#target_link_libraries(struct_bit_field seccomp)
