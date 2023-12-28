@@ -1,0 +1,1 @@
+add_executable(getdents_example getdents64_test.c)
