@@ -1,0 +1,1 @@
+add_executable(array_template array_template.cpp)
