@@ -7,6 +7,7 @@ using namespace std;
 
 template <class T>
 class Array {
+public:
     //构造函数
     Array(){
         for(int i=0; i < MAXSIZE; i++){
@@ -70,6 +71,32 @@ template <> void Array<char *>::Sort() {
 
 int main(int argc, char const * argv[]){
     cout << "array template test!" <<endl;
+    Array<int> a1;
+    Array<char*> b1;
+    a1[0] = 1;
+    a1[1] = 23;
+    a1[2] = 6;
+    a1[3] = 3;
+    a1[4] = 9;
+    a1.Sort();
+
+    for(int i=0; i < 5; i++){
+        cout << a1[i] <<"\t";
+    }
+    cout << endl;
+
+    b1[0] = "x1";
+    b1[1] = "ya";
+    b1[2] = "ad";
+    b1[3] = "be";
+    b1[4] = "bc";
+    b1.Sort();
+
+    for(int i = 0; i < 5; i++){
+        cout << b1[i] <<"\t";
+    }
+    cout << endl;
+
     return 0;
 }
 
