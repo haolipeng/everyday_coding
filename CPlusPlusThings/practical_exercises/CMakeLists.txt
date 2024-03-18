@@ -1,1 +1,3 @@
 add_executable(array_template array_template.cpp)
+
+add_executable(bracket_overloading bracket_overloading.cpp)
