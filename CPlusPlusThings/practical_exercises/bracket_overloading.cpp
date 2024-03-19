@@ -33,7 +33,7 @@ public:
             }
         }
 
-        //不存在处理
+        //不存在处理,将新元素添加到数据结构中
         p = employ + n++;
         p->name = new char[strlen(Name) + 1];
         strcpy(p->name, Name);
@@ -51,3 +51,17 @@ public:
         delete[] employ;
     }
 };
+
+int main(){
+    SalaryManage s(3);
+    s["zhang san"] = 2188.88;
+    s["li si"] = 1230.07;
+    s["wang wu"] = 3200.97;
+
+    cout << "zhang san\t" << s["zhang san"] <<endl;
+    cout << "li si\t" << s["li si"] <<endl;
+    cout << "wang wu\t" << s["wang wu"] <<endl;
+
+    cout << "-------下为display的输出--------\n\n";
+    s.display();
+}
