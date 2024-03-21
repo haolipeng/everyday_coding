@@ -1,5 +1,6 @@
 #include <cstring>
 #include <map>
+#include <iostream>
 
 using namespace std;
 
@@ -20,6 +21,28 @@ int main(int argc, char const* argv[]){
 
     //数组插入方式
     mp["addr"] = "中国";
-    //TODO:
+
+    //循环取出元素
+    for(iter = mp.begin(); iter != mp.end(); iter++){
+        cout << iter->first << "\t" << iter->second <<endl;
+    }
+
+    char key1[20];
+    cout << "please input key for find";
+    cin.getline(key1, 20);
+    //查找元素
+    for(iter = mp.begin(); iter != mp.end(); iter++){
+        if(strcmp(iter->first, key1) == 0){
+            cout << iter->first <<"found it!" << "it's value :" << iter->second <<endl;
+        }
+    }
+
+    //第一种删除方式
+    iter = mp.find("addr");
+    if(iter != mp.end()){
+        cout << iter->first << "found by key !" << "It's value :" << iter->second <<endl;
+        cout << "begin delete element!" << endl;
+        mp.erase(iter);
+    }
 }
 
