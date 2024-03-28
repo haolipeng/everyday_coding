@@ -44,5 +44,43 @@ int main(int argc, char const* argv[]){
         cout << "begin delete element!" << endl;
         mp.erase(iter);
     }
+
+    //第二种删除方式
+    //按照key删除元素
+    char drop_key[20];
+
+    //按照value删除元素
+    char drop_value[20];
+
+    cout << "请输入按key删除：";
+    cin.getline(drop_key, 20);
+
+    cout << "请输入按value删除：";
+    cin.getline(drop_value, 20);
+
+    for(iter = mp.begin(); iter != mp.end(); iter++){
+        if(strcmp(iter->first, drop_key) == 0){
+            cout << iter->first << "按照key查找出来了！"
+                 << "对应的value为：" << iter->second << endl;
+            cout << "开始删除元素！" << endl;
+            mp.erase(iter);
+            break;
+        }
+
+        if(strcmp(iter->second, drop_value) == 0){
+            cout << iter->second << "value查找出来了！"
+                 << "对应的key为：" << iter->first << endl;
+            cout << "开始删除元素！" << endl;
+            mp.erase(iter);
+            break;
+        }
+    }
+    cout << "------删除元素以后--------\n";
+    //循环取出元素
+    for(iter = mp.begin(); iter != mp.end(); iter++){
+        cout << iter->first << "\t" << iter->second << endl;
+    }
+
+    return 0;
 }
 
